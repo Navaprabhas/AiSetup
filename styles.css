@@ -1,13 +1,17 @@
 body {
   font-family: Arial, sans-serif;
   line-height: 1.6;
-  color: #333;
-  background-color: #f4f4f4;
+  color: #eee;
+  background-image: url('background.jpg'); /* Use your image file name here */
+  background-size: cover;                 /* Make the image cover the entire page */
+  background-position: center;            /* Center the background image */
+  background-repeat: no-repeat;           /* Prevent repeating the image */
+  background-attachment: fixed;           /* Keep the image fixed during scroll */
   margin: 0;
 }
 
 header {
-  background-color: #007BFF;
+  background: rgba(0,123,255,0.85);
   color: white;
   padding: 20px 0;
   text-align: center;
@@ -29,13 +33,13 @@ section {
   padding: 40px 20px;
   max-width: 900px;
   margin: 0 auto 20px auto;
-  background: white;
+  background: rgba(0,0,0,0.7); /* Slightly transparent for readability */
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 section h2 {
-  color: #007BFF;
+  color: #FFD700;
 }
 
 button {
@@ -70,4 +74,3 @@ footer {
     padding: 20px 10px;
   }
 }
-
