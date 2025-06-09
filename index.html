@@ -1,45 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Simple One Page Website</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Grid Background</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: #0a0a0a;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Welcome to My Simple Website</h1>
-    <nav>
-      <a href="#about">About</a>
-      <a href="#services">Services</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
+    <div id="canvas-container">
+        <canvas id="gridCanvas"></canvas>
+    </div>
 
-  <section id="about">
-    <h2>About</h2>
-    <p>This is a simple one-page website created using HTML, CSS, and JavaScript.</p>
-    <button id="about-btn">Click Me!</button>
-  </section>
+    <script>
+        class GridParticle {
+            constructor(x, y, size, direction) {
+                this.x = x;
+                this.y = y;
+                this.size = size;
+                this.baseSize = size;
+                this.direction = direction;
+                this.targetX = x;
+                this.targetY = y;
+                this.speed = 0.05;
+                this.angle = Math.random() * Math.PI * 2;
+            }
 
-  <section id="services">
-    <h2>Services</h2>
-    <ul>
-      <li>Web Design</li>
-      <li>Development</li>
-      <li>SEO Optimization</li>
-    </ul>
-  </section>
+            update(mouse) {
+                // Movement patterns
+                switch(this.direction) {
+                    case 'right': this.targetX += 1; break;
+                    case 'left': this.targetX -= 1; break;
+                    case 'up': this.targetY -= 1; break;
+                    case 'down': this.targetY += 1; break;
+                    case 'diagonal': 
+                        this.targetX += Math.cos(this.angle) * 0.5;
+                        this.targetY += Math.sin(this.angle) * 0.5;
+                        break;
+                }
 
-  <section id="contact">
-    <h2>Contact</h2>
-    <p>You can reach me at <a href="mailto:example@example.com">example@example.com</a>.</p>
-  </section>
+                // Smooth animation
+                this.x += (this.targetX - this.x) * this.speed;
+                this.y += (this.targetY - this.y) * this.speed;
 
-  <footer>
-    &copy; 2025 Simple One Page Website. All rights reserved.
-  </footer>
+                // Hover effect
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                this.size = distance < 100 ? this.baseSize * 2 : this.baseSize;
+            }
 
-  <script src="main.js"></script>
+            draw(ctx) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.size/20})`;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        class GridAnimation {
+            constructor() {
+                this.canvas = document.getElementById('gridCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.mouse = { x: 0, y: 0 };
+                this.resizeDebounce = null;
+
+                this.init();
+                this.addEventListeners();
+            }
+
+            init() {
+                this.resizeCanvas();
+                this.createParticles();
+                this.animate();
+            }
+
+            createParticles() {
+                const directions = ['right', 'left', 'up', 'down', 'diagonal'];
+                const spacing = 40;
+                
+                for(let x = 0; x < this.canvas.width; x += spacing) {
+                    for(let y = 0; y < this.canvas.height; y += spacing) {
+                        const direction = directions[Math.floor(Math.random() * directions.length)];
+                        this.particles.push(
+                            new GridParticle(x, y, 2, direction)
+                        );
+                    }
+                }
+            }
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Add radial gradient overlay
+                const gradient = this.ctx.createRadialGradient(
+                    this.mouse.x, this.mouse.y, 50,
+                    this.mouse.x, this.mouse.y, 200
+                );
+                gradient.addColorStop(0, 'rgba(100, 100, 255, 0.2)');
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                this.ctx.fillStyle = gradient;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.particles.forEach(particle => {
+                    particle.update(this.mouse);
+                    particle.draw(this.ctx);
+                });
+
+                requestAnimationFrame(() => this.animate());
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            addEventListeners() {
+                window.addEventListener('resize', () => {
+                    clearTimeout(this.resizeDebounce);
+                    this.resizeDebounce = setTimeout(() => {
+                        this.resizeCanvas();
+                        this.particles = [];
+                        this.createParticles();
+                    }, 200);
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                });
+            }
+        }
+
+        // Initialize animation
+        new GridAnimation();
+    </script>
 </body>
 </html>
+
